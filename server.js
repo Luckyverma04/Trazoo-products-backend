@@ -39,7 +39,7 @@ app.use(
   cors({
     origin: (origin, callback) => {
       // Allow requests without an Origin
-      // (Postman, Thunder Client, server-to-server requests)
+      // e.g. Postman / Thunder Client / server-to-server
       if (!origin) {
         return callback(null, true);
       }
@@ -119,28 +119,34 @@ app.use(
    SERVER START
 ====================== */
 
+// Render provides PORT automatically.
+// Local development will use 5000.
 const PORT = process.env.PORT || 5000;
 
-const server = app.listen(PORT, async () => {
-  console.log(`✅ Backend live on port ${PORT}`);
+const server = app.listen(
+  PORT,
+  "0.0.0.0",
+  async () => {
+    console.log(`✅ Backend live on port ${PORT}`);
 
-  // Wait 2 seconds so DB connection can initialize
-  // before checking/creating the default admin.
-  setTimeout(async () => {
-    try {
-      await createDefaultAdmin();
-      console.log("✅ Default admin check completed");
-    } catch (error) {
-      console.error(
-        "❌ Default admin error:",
-        error.message
-      );
-    }
-  }, 2000);
-});
+    // Give database a little time before
+    // checking/creating default admin.
+    setTimeout(async () => {
+      try {
+        await createDefaultAdmin();
+        console.log("✅ Default admin check completed");
+      } catch (error) {
+        console.error(
+          "❌ Default admin error:",
+          error.message
+        );
+      }
+    }, 2000);
+  }
+);
 
 /* ===================================================
-   🔥 KEEP BACKEND ALIVE (RENDER SAFE)
+   🔥 KEEP BACKEND ALIVE
 =================================================== */
 
 const KEEP_ALIVE_URL = process.env.KEEP_ALIVE_URL;

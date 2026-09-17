@@ -12,21 +12,21 @@ import proposalRequestRoute from "./src/routes/proposalRequest.route.js";
 
 dotenv.config();
 
-/* ======================
+/* =====================================================
    DATABASE
-====================== */
+===================================================== */
 
 connectDB();
 
-/* ======================
+/* =====================================================
    APP INIT
-====================== */
+===================================================== */
 
 const app = express();
 
-/* ======================
+/* =====================================================
    CORS CONFIG
-====================== */
+===================================================== */
 
 const allowedOrigins = [
   "http://localhost:5173",
@@ -38,8 +38,8 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests without an Origin
-      // e.g. Postman / Thunder Client / server-to-server
+      // Allow requests without Origin
+      // Postman / Thunder Client / server-to-server
       if (!origin) {
         return callback(null, true);
       }
@@ -49,6 +49,7 @@ app.use(
       }
 
       console.log("❌ CORS blocked origin:", origin);
+
       return callback(new Error("CORS not allowed"));
     },
 
@@ -70,9 +71,9 @@ app.use(
   })
 );
 
-/* ======================
+/* =====================================================
    MIDDLEWARES
-====================== */
+===================================================== */
 
 app.use(
   express.json({
@@ -87,9 +88,9 @@ app.use(
   })
 );
 
-/* ======================
+/* =====================================================
    HEALTH CHECK
-====================== */
+===================================================== */
 
 app.get("/", (req, res) => {
   res.status(200).json({
@@ -100,9 +101,9 @@ app.get("/", (req, res) => {
   });
 });
 
-/* ======================
-   ROUTES
-====================== */
+/* =====================================================
+   API ROUTES
+===================================================== */
 
 app.use("/api/auth", authRoute);
 
@@ -115,12 +116,45 @@ app.use(
   proposalRequestRoute
 );
 
-/* ======================
-   SERVER START
-====================== */
+/* =====================================================
+   404 HANDLER
+===================================================== */
 
-// Render provides PORT automatically.
-// Local development will use 5000.
+app.use((req, res) => {
+  res.status(404).json({
+    status: "ERROR",
+    message: "Route not found",
+    path: req.originalUrl,
+  });
+});
+
+/* =====================================================
+   GLOBAL ERROR HANDLER
+===================================================== */
+
+app.use((err, req, res, next) => {
+  console.error("❌ Server Error:", err.message);
+
+  if (err.message === "CORS not allowed") {
+    return res.status(403).json({
+      status: "ERROR",
+      message: "CORS not allowed",
+      origin: req.headers.origin || null,
+    });
+  }
+
+  res.status(500).json({
+    status: "ERROR",
+    message: "Internal server error",
+  });
+});
+
+/* =====================================================
+   SERVER START
+===================================================== */
+
+// Render automatically provides PORT.
+// Local development falls back to 5000.
 const PORT = process.env.PORT || 5000;
 
 const server = app.listen(
@@ -129,11 +163,11 @@ const server = app.listen(
   async () => {
     console.log(`✅ Backend live on port ${PORT}`);
 
-    // Give database a little time before
-    // checking/creating default admin.
+    // Wait 2 seconds before checking default admin
     setTimeout(async () => {
       try {
         await createDefaultAdmin();
+
         console.log("✅ Default admin check completed");
       } catch (error) {
         console.error(
@@ -145,9 +179,9 @@ const server = app.listen(
   }
 );
 
-/* ===================================================
-   🔥 KEEP BACKEND ALIVE
-=================================================== */
+/* =====================================================
+   KEEP BACKEND ALIVE
+===================================================== */
 
 const KEEP_ALIVE_URL = process.env.KEEP_ALIVE_URL;
 

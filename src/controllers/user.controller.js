@@ -1,22 +1,13 @@
 import { User } from "../models/user.model.js";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
-import nodemailer from "nodemailer";
+import sendEmail from "../utils/sendEmail.js";
 import Enquiry from "../models/enquiry.model.js";
 // -----------------------------------------
-// 📌 Send OTP Email using Nodemailer
+// 📌 Send OTP Email
 // -----------------------------------------
 const sendOTPEmail = async (email, otp) => {
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
-
-  await transporter.sendMail({
-    from: `"Trazoo" <${process.env.EMAIL_USER}>`,
+  await sendEmail({
     to: email,
     subject: "Your Email Verification OTP",
     html: `

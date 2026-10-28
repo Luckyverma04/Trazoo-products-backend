@@ -1,5 +1,5 @@
 import ProposalRequest from "../models/proposalRequest.model.js";
-import sendEmail from "../utils/sendEmail.js";
+import sendEmail, { ADMIN_EMAIL } from "../utils/sendEmail.js";
 
 /* ================================================
    CREATE PROPOSAL REQUEST  —  POST /api/proposal-requests
@@ -32,7 +32,8 @@ export const createProposalRequest = async (req, res) => {
 
     // Admin notification email (background, doesn't block the response)
     sendEmail({
-      to: process.env.EMAIL_USER,
+      to: ADMIN_EMAIL,
+      replyTo: email,
       subject: `🚀 New Proposal Request — ${name}`,
       html: `
         <h2 style="color:#DF4607;font-family:sans-serif">New Proposal Request</h2>
@@ -48,7 +49,7 @@ export const createProposalRequest = async (req, res) => {
         </table>
         <p style="font-family:sans-serif;margin-top:20px;color:#888">Request ID: ${request._id}</p>
       `,
-    }).catch((err) => console.error("Admin email failed:", err.message));
+    }).catch(() => {});
 
     // Customer confirmation email (background, doesn't block the response)
     sendEmail({
@@ -60,7 +61,7 @@ export const createProposalRequest = async (req, res) => {
         <br/>
         <p style="font-family:sans-serif;color:#888">Team Trazoo Global</p>
       `,
-    }).catch((err) => console.error("Customer email failed:", err.message));
+    }).catch(() => {});
   } catch (error) {
     console.error("Create proposal request error:", error);
     res.status(500).json({ message: "Something went wrong" });

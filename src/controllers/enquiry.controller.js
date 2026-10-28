@@ -1,22 +1,11 @@
 import Enquiry from "../models/enquiry.model.js";
-import nodemailer from "nodemailer";
+import sendEmail, { ADMIN_EMAIL } from "../utils/sendEmail.js";
 import csv from "csv-parser";
 import fs from "fs";
 
 // ================= EMAIL =================
 const sendUserEmail = async (email, name) => {
-  const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 587,
-    secure: false,
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
-
-  await transporter.sendMail({
-    from: `"TRAZOO" <${process.env.EMAIL_USER}>`,
+  await sendEmail({
     to: email,
     subject: "Your Enquiry Has Been Received",
     html: `<p>Hello ${name}, we received your enquiry.</p>`,
@@ -24,21 +13,11 @@ const sendUserEmail = async (email, name) => {
 };
 // ================= ADMIN ENQUIRY EMAIL =================
 const sendAdminEnquiryEmail = async (enquiry) => {
-  const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 587,
-    secure: false,
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
-
   const adminUrl = `https://trazooglobal.com/admin/lead/${enquiry._id}`;
 
-  await transporter.sendMail({
-    from: `"TRAZOO Global" <${process.env.EMAIL_USER}>`,
-    to: process.env.EMAIL_USER,
+  await sendEmail({
+    to: ADMIN_EMAIL,
+    replyTo: enquiry.email || undefined,
     subject: `🚨 New Enquiry - ${enquiry.fullName}`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 700px; margin: auto;">

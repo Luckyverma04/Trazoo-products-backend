@@ -1,6 +1,6 @@
 import KitEnquiry from "../models/KitEnquiry.model.js";
 import Product from "../models/product.model.js";
-import sendEmail from "../utils/sendEmail.js";
+import sendEmail, { ADMIN_EMAIL } from "../utils/sendEmail.js";
 
 /* ================================================
    CREATE KIT ENQUIRY  —  POST /kit-enquiry
@@ -70,9 +70,10 @@ export const createKitEnquiry = async (req, res) => {
       </tr>
     `).join("");
 
-    // ── Admin Notification Email ──
-    await sendEmail({
-      to: process.env.EMAIL_USER,
+    // ── Admin Notification Email (background — a mail failure must not fail the enquiry) ──
+    sendEmail({
+      to: ADMIN_EMAIL,
+      replyTo: email || undefined,
       subject: `🚀 New Kit Enquiry — ${name}`,
       html: `
         <h2 style="color:#e65c00;font-family:sans-serif">New Gift Kit Enquiry Received</h2>
@@ -98,10 +99,10 @@ export const createKitEnquiry = async (req, res) => {
 
         <p style="font-family:sans-serif;margin-top:20px;color:#888">Enquiry ID: ${enquiry._id}</p>
       `,
-    });
+    }).catch(() => {});
 
     // ── Customer Confirmation Email ──
-    await sendEmail({
+    if (email) sendEmail({
       to: email,
       subject: `🎁 Your Gift Kit Enquiry Received — Trazoo`,
       html: `
@@ -128,7 +129,7 @@ export const createKitEnquiry = async (req, res) => {
         <br/>
         <p style="font-family:sans-serif;color:#888">Team Trazoo Global</p>
       `,
-    });
+    }).catch(() => {});
 
     res.status(201).json({
       success: true,
@@ -210,9 +211,10 @@ export const createCustomizationEnquiry = async (req, res) => {
       history: [{ action: "Enquiry created", comment: "Submitted via customization page" }],
     });
 
-    // ── Admin Notification Email ──
-    await sendEmail({
-      to: process.env.EMAIL_USER,
+    // ── Admin Notification Email (background — a mail failure must not fail the enquiry) ──
+    sendEmail({
+      to: ADMIN_EMAIL,
+      replyTo: email || undefined,
       subject: `🎨 New Customization Request — ${name}`,
       html: `
         <h2 style="color:#e65c00;font-family:sans-serif">New Customization Request</h2>
@@ -227,11 +229,11 @@ export const createCustomizationEnquiry = async (req, res) => {
         </table>
         <p style="font-family:sans-serif;margin-top:20px;color:#888">Enquiry ID: ${enquiry._id}</p>
       `,
-    });
+    }).catch(() => {});
 
     // ── Customer Confirmation Email (skip if no email given) ──
     if (email) {
-      await sendEmail({
+      sendEmail({
         to: email,
         subject: `Your Customization Request Received — Trazoo`,
         html: `
@@ -241,7 +243,7 @@ export const createCustomizationEnquiry = async (req, res) => {
           <br/>
           <p style="font-family:sans-serif;color:#888">Team Trazoo Global</p>
         `,
-      });
+      }).catch(() => {});
     }
 
     res.status(201).json({

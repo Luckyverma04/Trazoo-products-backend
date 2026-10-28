@@ -5,7 +5,7 @@ import nodemailer from "nodemailer";
 // silently times out in production. When BREVO_API_KEY is set we send over
 // Brevo's HTTPS API instead; SMTP is kept as a fallback for local development.
 
-const SENDER_NAME = "Trazoo Global";
+const SENDER_NAME = "Trazoo Global LLP";
 
 // Where admin notifications go. Falls back to the sending mailbox.
 export const ADMIN_EMAIL = process.env.ADMIN_EMAIL || process.env.EMAIL_USER;
